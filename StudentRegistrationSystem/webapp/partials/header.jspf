@@ -1,0 +1,21 @@
+<%
+    String uri = request.getRequestURI();
+    boolean isDashboard = uri.endsWith("/dashboard");
+    boolean isAdd = uri.endsWith("/form.jsp");
+    boolean isStudents = uri.endsWith("/list") || uri.endsWith("/edit.jsp");
+    boolean isReports = uri.endsWith("/report");
+%>
+<header class="app-header">
+    <div class="container page-wrap">
+        <div class="header-inner">
+            <a href="<%=request.getContextPath()%>/dashboard" class="brand-link">Student Admin</a>
+            <nav class="header-nav">
+                <a href="<%=request.getContextPath()%>/dashboard" class="btn btn-dark btn-sm nav-btn <%= isDashboard ? "active" : "" %>">Dashboard</a>
+                <a href="<%=request.getContextPath()%>/form.jsp" class="btn btn-primary btn-sm nav-btn <%= isAdd ? "active" : "" %>">Add Student</a>
+                <a href="<%=request.getContextPath()%>/list" class="btn btn-secondary btn-sm nav-btn <%= isStudents ? "active" : "" %>">Students</a>
+                <a href="<%=request.getContextPath()%>/report" class="btn btn-success btn-sm nav-btn <%= isReports ? "active" : "" %>">Reports</a>
+                <a href="<%=request.getContextPath()%>/logout" class="btn btn-danger btn-sm">Logout</a>
+            </nav>
+        </div>
+    </div>
+</header>

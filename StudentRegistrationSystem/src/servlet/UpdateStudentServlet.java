@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class AddStudentServlet extends HttpServlet {
+public class UpdateStudentServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private StudentDAO studentDAO;
 
@@ -20,31 +20,41 @@ public class AddStudentServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String idParam = request.getParameter("id");
         String name = request.getParameter("name") == null ? "" : request.getParameter("name").trim();
         String email = request.getParameter("email") == null ? "" : request.getParameter("email").trim();
         String course = request.getParameter("course") == null ? "" : request.getParameter("course").trim();
 
-        // Simple Validation inside controller before inserting
-        if (name == null || name.trim().isEmpty() || 
-            email == null || email.trim().isEmpty() || 
-            course == null || course.trim().isEmpty()) {
-            response.sendRedirect("form.jsp?error=Missing Fields");
-            return;
-        }
-
-        if (studentDAO.emailExists(email)) {
-            response.sendRedirect("form.jsp?error=Email already exists");
-            return;
-        }
-
-        Student newStudent = new Student(name, email, course);
+        int id;
         try {
-            studentDAO.insertStudent(newStudent);
+            id = Integer.parseInt(idParam);
+        } catch (NumberFormatException e) {
+            response.sendRedirect("list?error=Invalid student id");
+            return;
+        }
+
+        if (name.isEmpty() || email.isEmpty() || course.isEmpty()) {
+            response.sendRedirect("list?action=edit&id=" + id + "&error=Missing Fields");
+            return;
+        }
+
+        if (studentDAO.emailExistsForOtherStudent(email, id)) {
+            response.sendRedirect("list?action=edit&id=" + id + "&error=Email already exists");
+            return;
+        }
+
+        Student updatedStudent = new Student(id, name, email, course);
+        try {
+            boolean updated = studentDAO.updateStudent(updatedStudent);
+            if (!updated) {
+                response.sendRedirect("list?error=Student not found");
+                return;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            response.sendRedirect("form.jsp?error=Unable to save student");
+            response.sendRedirect("list?action=edit&id=" + id + "&error=Unable to update student");
             return;
         }
-        response.sendRedirect("success.jsp");
+        response.sendRedirect("list?msg=Student updated successfully");
     }
 }
